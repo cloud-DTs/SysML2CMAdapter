@@ -33,8 +33,8 @@ public class Main {
         String fileName = args[0];
         String twinName = args[1].toLowerCase();
 
-        if(twinName.length() > 20){
-            throw new IllegalStateException("Twin name has a maximal length of 32 characters");
+        if(twinName.length() > 10){
+            throw new IllegalStateException("Twin name has a maximal length of 10 characters. Actual length: "+ twinName.length());
         }
 
         try {
@@ -85,10 +85,10 @@ public class Main {
         config.setDigital_twin_name(digitalTwinName);
         config.setCold_storage_definition_id(twinEntity.getCold().getDefinitionId());
         config.setCold_storage_id(twinEntity.getCold().getId());
-        config.setCold_storage_size_in_days(twinEntity.getCold().getRetentionDays());
+        config.setCold_storage_size_in_days(Integer.valueOf(twinEntity.getCold().getRetentionDays()));
         config.setHot_storage_definition_id(twinEntity.getHot().getDefinitionId());
         config.setHot_storage_id(twinEntity.getHot().getId());
-        config.setHot_storage_size_in_days(twinEntity.getHot().getRetentionDays());
+        config.setHot_storage_size_in_days(Integer.valueOf(twinEntity.getHot().getRetentionDays()));
 
         return config;
     }

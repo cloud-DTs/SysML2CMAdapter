@@ -5,6 +5,9 @@ import SourceService.XMIContext;
 import model.*;
 import registry.TwinRegistry;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TriggerRule extends MappingRule<Connector> {
     public TriggerRule(XMIContext xmiContext, TwinRegistry twinRegistry) {
         super(xmiContext, twinRegistry);
@@ -30,10 +33,10 @@ public class TriggerRule extends MappingRule<Connector> {
 
         TwinStrategy twinStrategy = linkStrategyAndComponent(sourceId,targetId);
 
-        TwinComponentProperty lhsProp = getTwinRegistry().getProperty(twinStrategy.getComponent().getId(),lhsGuid);
-        TwinComponentProperty rhsProp = getTwinRegistry().getProperty(twinStrategy.getComponent().getId(),rhsGuid);
-        TwinComponentProperty lhsConstProp = getTwinRegistry().getProperty(twinStrategy.getComponent().getParentEntity().getId(),lhsGuid);
-        TwinComponentProperty rhsConstProp = getTwinRegistry().getProperty(twinStrategy.getComponent().getParentEntity().getId(),rhsGuid);
+        TwinComponentProperty lhsProp = getTwinRegistry().getConstProperty(twinStrategy.getComponent().getId(),lhsGuid);
+        TwinComponentProperty rhsProp = getTwinRegistry().getConstProperty(twinStrategy.getComponent().getId(),rhsGuid);
+        TwinComponentProperty lhsConstProp = getTwinRegistry().getConstProperty(twinStrategy.getComponent().getParentEntity().getId(),lhsGuid);
+        TwinComponentProperty rhsConstProp = getTwinRegistry().getConstProperty(twinStrategy.getComponent().getParentEntity().getId(),rhsGuid);
 
         if(lhsProp == null){
             twinStrategy.setLhs(lhsConstProp);
@@ -48,11 +51,25 @@ public class TriggerRule extends MappingRule<Connector> {
             twinStrategy.setRhs(rhsProp);
         }
 
-        if(twinStrategy.getLhs() == null || twinStrategy.getRhs() == null){
-            throw new IllegalStateException("Invalid Strategy "+twinStrategy.getName()+"\nLeftHandSide or rightHandSide is missing!");
+        if(twinStrategy.getLhs() == null){
+           handleMissingSide(twinStrategy,"lhs",lhsGuid);
+        }
+        if(twinStrategy.getRhs() == null){
+            handleMissingSide(twinStrategy,"rhs",rhsGuid);
         }
 
+
+
         twinStrategy.setOperator(operator);
+    }
+
+    private void handleMissingSide(TwinStrategy twinStrategy, String lhs, String lhsGuid) {
+
+        throw new IllegalStateException("Failed to set "+lhs+ " one trigger which triggers strategy "+ twinStrategy.getName() +
+                "\nA device can only trigger a startegy with " +
+                lhs + " side when the measurementproperty is also measured by the device.\nWhen it is a constproperty it should " +
+                "be located in the component, which is measured by the device!" );
+
     }
 
     private TwinStrategy linkStrategyAndComponent(String sourceId, String targetId) {
@@ -62,10 +79,16 @@ public class TriggerRule extends MappingRule<Connector> {
             twinStrategy = getTwinRegistry().getStrategy(targetId);
             twinComponent = getTwinRegistry().getComponent(sourceId);
         }
-        if(twinStrategy == null || twinComponent == null){
-            throw new IllegalStateException("Strategy or Component not found for a trigger connector;");
+        if(twinStrategy == null){
+            throw new IllegalStateException("A trigger connection is not connected to a StrategyInstance!");
+        }
+
+        if( twinComponent == null){
+            throw new IllegalStateException("A trigger connection is not connected to a DeviceInstance!");
 
         }
+
+
 
         twinStrategy.setComponent(twinComponent);
         twinStrategy.attachToParent();

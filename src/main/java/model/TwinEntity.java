@@ -16,7 +16,6 @@ public class TwinEntity extends TwinModel {
     private TwinEntity parent;
     private List<TwinEntity> subEntities = new ArrayList<>();
     private List<TwinComponent> components = new ArrayList<>();
-    private List<TwinConstProperty> constProperties =  new ArrayList<>();
     private String definitionId;
     private TwinDataBase hot;
     private TwinDataBase cold;

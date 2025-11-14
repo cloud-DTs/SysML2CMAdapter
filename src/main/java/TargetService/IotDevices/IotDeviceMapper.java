@@ -1,7 +1,6 @@
 package TargetService.IotDevices;
 
 import model.TwinComponent;
-import model.TwinConstProperty;
 import model.TwinComponentProperty;
 import model.TwinEntity;
 import org.mapstruct.Mapper;
@@ -17,17 +16,11 @@ public interface IotDeviceMapper {
 
     @Mapping(source="shortenUUID", target = "id")
     @Mapping(source="properties", target = "properties")
-    @Mapping(source="constProperties", target = "constProperties")
     IotDeviceDTO toIotDeviceDTO(TwinComponent twinComponent);
-
-    @Mapping(source = "name", target = "name")
-    @Mapping(source = "dataType", target = "dataType")
-    @Mapping(source = "value", target = "value")
-    IotDeviceConstPropertyDTO toIotDeviceConstPropertyDTO(TwinConstProperty constProperty);
-
 
     @Mapping(source = "name",target = "name")
     @Mapping(source = "dataType",target = "dataType")
+    @Mapping(source = "initialValue", target = "initValue")
     IotDevicePropertyDTO toIotDevicePropertyDTO(TwinComponentProperty twinComponentProperty);
 
 

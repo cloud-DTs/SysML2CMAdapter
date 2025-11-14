@@ -26,12 +26,13 @@ public class ConstPropRule extends MappingRule<Attribute> {
         String definitionId = attribute.getEaGuid();
         EAElement ownerElement = getXmiContext().getElement(attribute.getOwner());
 
+
         for(TwinEntity owningEntity: getTwinRegistry().getTwins().stream().filter(x -> x.getDefinitionId().equals(ownerElement.getIdref())).collect(Collectors.toList())){
-            addConstProp(attribute,owningEntity,definitionId);
+            addConstProp(attribute,owningEntity,definitionId,getXmiContext().getElement(owningEntity.getId()));
         }
     }
 
-    private void addConstProp(Attribute attribute, TwinEntity owningEntity, String definitionId) {
+    private void addConstProp(Attribute attribute, TwinEntity owningEntity, String definitionId,EAElement element) {
         String compoundId = "CONST" + owningEntity.getId();
 
         List<TwinComponent> twinComponents = owningEntity.getComponents().stream()
@@ -60,6 +61,8 @@ public class ConstPropRule extends MappingRule<Attribute> {
         twinComponentProperty.setDataType(getXmiContext().getTagValue(attribute, "dataType").orElse("string"));
         twinComponentProperty.setComponent(constComponent);
         twinComponentProperty.attachToParent();
+        twinComponentProperty.setInitialValue(resolveRuntimeValue(element, attribute));
+
 
         getTwinRegistry().registerProperty(
                 owningEntity.getId(),
@@ -73,7 +76,6 @@ public class ConstPropRule extends MappingRule<Attribute> {
     private String resolveRuntimeValue(EAElement instanceElement, Attribute attribute) {
 
         String runState = Optional.ofNullable(instanceElement.getExtendedRunState()).orElse("");
-
         if (!runState.isEmpty()) {
             Pattern pattern = Pattern.compile(
                     "Variable=" + Pattern.quote(attribute.getName()) + ";Value=([^;]+);"

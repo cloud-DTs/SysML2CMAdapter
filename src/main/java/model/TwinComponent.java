@@ -16,7 +16,6 @@ public class TwinComponent extends TwinModel {
     private String componentType;
     private TwinEntity parentEntity;
     private List<TwinComponentProperty> properties = new ArrayList<>();
-    private List<TwinConstProperty> constProperties = new ArrayList<>();
     private List<TwinStrategy> strategies = new ArrayList<>();
     private String deviceId;
     private String definitionId;

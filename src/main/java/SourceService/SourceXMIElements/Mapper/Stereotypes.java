@@ -28,7 +28,7 @@ public enum Stereotypes {
     SENDS_TO("sendsTo"),
     MEASURES("measures"),
     TRIGGERS("triggers"),
-    FEEDBACK_TOPIC("feedBackTopic"),
+    FEEDBACK_TOPIC("feedbackTopic"),
 
 
     TWIN_INSTANCE("TwinInstance");

@@ -9,6 +9,7 @@ public class TwinComponentProperty extends TwinProperty{
     private String propertyGuid;
     private String name;
     private String dataType;
+    private String initialValue;
     private TwinComponent component;
 
 
@@ -21,4 +22,5 @@ public class TwinComponentProperty extends TwinProperty{
     public void attachToParent() {
         this.component.getProperties().add(this);
     }
+
 }

@@ -7,6 +7,11 @@ import model.*;
 import org.json.JSONObject;
 import registry.TwinRegistry;
 
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class StrategyRule extends MappingRule<EAElement> {
     public StrategyRule(XMIContext xmiContext, TwinRegistry twinRegistry) {
         super(xmiContext, twinRegistry);
@@ -27,9 +32,25 @@ public class StrategyRule extends MappingRule<EAElement> {
         addStrategy(element, strategyDefinition);
     }
 
+    public boolean isValidAndExists(String path) {
+        try {
+            Path p = Paths.get(path);
+            return Files.exists(p);
+        } catch (InvalidPathException e) {
+            return false;
+        }
+    }
+
+
     private void addStrategy(EAElement element, EAElement strategyDefinition) {
         TwinStrategy twinStrategy = new TwinStrategy();
-        twinStrategy.setPathToCode(getXmiContext().getTaggedValue(strategyDefinition, "pathToCode"));
+        String pathToCode = getXmiContext().getTaggedValue(strategyDefinition, "pathToCode");
+        if(!pathToCode.isEmpty()){
+            if(!isValidAndExists(pathToCode)){
+                throw new IllegalStateException("Strategy " + strategyDefinition.getName() + "code not found: " + pathToCode);
+            }
+        }
+        twinStrategy.setPathToCode(pathToCode);
         twinStrategy.setStrategyType(getXmiContext().getTaggedValue(strategyDefinition, "type").toLowerCase());
         twinStrategy.setStrategyId(element.getIdref());
         twinStrategy.setName(element.getName());
@@ -65,7 +86,7 @@ public class StrategyRule extends MappingRule<EAElement> {
             case "NONE" -> {
                 return new NoneFeedBackTopic();
             }
-            default -> throw new IllegalStateException("Unexpected value: " + topicType);
+            default -> throw new IllegalStateException("Unexpected FeedBackTopicType: " + topicType);
         }
     }
 
@@ -73,7 +94,6 @@ public class StrategyRule extends MappingRule<EAElement> {
         switch (payloadType){
             case "custom" -> {
                 CustomPayload payload = new CustomPayload();
-                System.out.println(customPayload);
                 JSONObject jsonObject = new JSONObject(customPayload);
                 payload.setPayload(jsonObject);
                 return payload;
@@ -83,7 +103,7 @@ public class StrategyRule extends MappingRule<EAElement> {
                 actionResultPayload.setPayload("action-result");
                 return actionResultPayload;
             }
-            default -> throw new IllegalStateException("Unexpected value: " + payloadType);
+            default -> throw new IllegalStateException("Unexpected payloadType: " + payloadType);
         }
     }
 }

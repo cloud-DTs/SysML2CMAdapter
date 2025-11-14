@@ -7,10 +7,10 @@ import lombok.Setter;
 @Setter
 public class ConfigDTO {
     private String digital_twin_name;
-    private String hot_storage_size_in_days;
+    private int hot_storage_size_in_days;
     private String hot_storage_id;
     private String hot_storage_definition_id;
-    private String cold_storage_size_in_days;
+    private int cold_storage_size_in_days;
     private String cold_storage_id;
     private String cold_storage_definition_id;
 

@@ -26,9 +26,6 @@ public interface EventMapper {
     @Named("toCondition")
     default String toCondition(TwinStrategy strategy) {
         if (strategy == null) return null;
-
-        System.out.println(strategy.getLhs());
-        System.out.println(strategy.getRhs());
         String lhs = formatProperty(strategy.getLhs());
         String rhs = formatProperty(strategy.getRhs());
         String operator = strategy.getOperator() != null ? strategy.getOperator() : "==";

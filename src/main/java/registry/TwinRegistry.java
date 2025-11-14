@@ -5,7 +5,6 @@ import model.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 
 public class TwinRegistry {
@@ -14,7 +13,6 @@ public class TwinRegistry {
     private Map<String, TwinComponent> components = new HashMap<>();
     private Map<String, TwinStrategy> strategies = new HashMap<>();
     private Map<String,TwinComponentProperty> properties = new HashMap<>();
-    private Map<String,TwinConstProperty> constProperties = new HashMap<>();
 
 
     public void registerEntity(String id, TwinEntity entity) {
@@ -29,14 +27,36 @@ public class TwinRegistry {
         strategies.put(id, strategy);
     }
 
-    public void registerProperty(String componentId,String propertyName, TwinComponentProperty property) {
-        System.out.println(propertyName);
+    public void registerProperty(TwinComponent component, TwinComponentProperty property) throws IllegalStateException {
+        if(propertyExists(component.getId(),property.getPropertyGuid())){
+            TwinComponentProperty existingProperty = properties.get(component.getId()+property.getPropertyGuid());
+            throw new IllegalStateException(
+                    String.format("Failed to connect Property {%s} with component {%s} and device {%s}\n" +
+                            "Property {%s} from component {%s} is already measured by device {%s}",
+                            property.getName(),
+                            component.getParentEntity().getEntityName(),
+                            component.getComponentName(),
+
+                            property.getName(),
+                            existingProperty.getComponent().getParentEntity().getEntityName(),
+                            existingProperty.getComponent().getComponentName()));
+        }
+        property.setComponent(component);
+        property.attachToParent();
+        properties.put(component.getId()+property.getPropertyGuid(), property);
+    }
+    public void registerProperty(String componentId, String propertyName, TwinComponentProperty property) {
+        if(propertyExists(componentId,propertyName)){
+            throw new IllegalStateException();
+        }
         properties.put(componentId+propertyName, property);
     }
-
-    public void registerProperty(String entityId,String name, TwinConstProperty property) {
-        constProperties.put(entityId+name, property);
+    public boolean propertyExists(String entityId, String componentId, String propertyName) {
+        return properties.containsKey(entityId + componentId + propertyName);
     }
+
+
+
     public TwinEntity getEntity(String id) {
         return entities.get(id);
     }
@@ -49,38 +69,20 @@ public class TwinRegistry {
         return strategies.get(id);
     }
 
-    public TwinComponentProperty getProperty(String id) {
-        return properties.get(id);
-    }
-    public TwinComponentProperty getProperty(String componentId,String id) {
+
+    public TwinComponentProperty getConstProperty(String componentId, String id) {
         return properties.get(componentId+id);
     }
 
-    public TwinConstProperty getConstProperty(String id) {
-        return constProperties.get(id);
-    }
-    public TwinConstProperty getConstProperty(String entityId,String id) {
-        return constProperties.get(entityId+id);
-    }
+    public TwinComponentProperty getProperty(String entityId,String componentId, String id) {
+        return properties.get(entityId+componentId+id);
 
-    public boolean entityExists(String id) {
-        return entities.containsKey(id);
-    }
-
-    public boolean componentExists(String id) {
-        return components.containsKey(id);
-    }
-
-    public boolean strategyExists(String id) {
-        return strategies.containsKey(id);
     }
 
     public boolean propertyExists(String componentId,String propertyName) {
         return properties.containsKey(componentId+propertyName);
     }
-    public boolean constPropertyExists(String entityId,String propertyName) {
-        return constProperties.containsKey(entityId+propertyName);
-    }
+
 
     public List<TwinEntity> getTwins() {
         return entities.values().stream().toList();
