@@ -8,6 +8,7 @@ import model.TwinEntity;
 import registry.TwinRegistry;
 
 import java.util.List;
+import java.util.UUID;
 
 public class TwinRule extends MappingRule<EAElement> {
 
@@ -42,44 +43,80 @@ public class TwinRule extends MappingRule<EAElement> {
 
 
     private DatabasePair buildDatabases(EAElement twinElement) {
+
         List<EAElement> databaseInstances = getXmiContext().getElementsByOwner(
                 SourceService.SourceXMIElements.Mapper.Stereotypes.DATABASE_INSTANCE,
                 twinElement.getIdref()
         );
 
-        if (databaseInstances.size() != 2) {
-            throw new IllegalStateException(
-                    String.format("Twin '%s' must have exactly 2 database instances (hot and cold), found: %d",
-                            twinElement.getName(), databaseInstances.size()));
+        int count = databaseInstances.size();
+
+        if (count == 0) {
+            TwinDataBase hot = createDefaultDatabase("HOT");
+            TwinDataBase cold = createDefaultDatabase("COLD");
+            return new DatabasePair(hot, cold);
+        }
+        if (count == 1) {
+            EAElement existing = databaseInstances.get(0);
+            TwinDataBase parsed = buildSingleDatabase(existing);
+
+            boolean isHot = getTier(existing).contains("HOT");
+
+            TwinDataBase fallback = createDefaultDatabase(isHot ? "COLD" : "HOT");
+
+            return isHot
+                    ? new DatabasePair(parsed, fallback)  // parsed = HOT
+                    : new DatabasePair(fallback, parsed); // parsed = COLD
         }
 
-        EAElement db1 = databaseInstances.get(0);
-        EAElement db2 = databaseInstances.get(1);
+        if (count == 2) {
 
-        EAElement db1Definition = getXmiContext().findDefinitonBlockForInstance(db1);
-        EAElement db2Definition = getXmiContext().findDefinitonBlockForInstance(db2);
+            EAElement db1 = databaseInstances.get(0);
+            EAElement db2 = databaseInstances.get(1);
 
-        TwinDataBase twinDataBase1 = new TwinDataBase();
-        twinDataBase1.setDataBaseId(db1.getIdref());
-        twinDataBase1.setDefinitionId(db1Definition.getIdref());
-        twinDataBase1.setRetentionDays(getRetentionDays(db2));
+            TwinDataBase tdb1 = buildSingleDatabase(db1);
+            TwinDataBase tdb2 = buildSingleDatabase(db2);
 
-        TwinDataBase twinDataBase2 = new TwinDataBase();
-        twinDataBase2.setDataBaseId(db2.getIdref());
-        twinDataBase2.setDefinitionId(db2Definition.getIdref());
-        twinDataBase2.setRetentionDays(getRetentionDays(db2));
+            boolean db1IsHot = getTier(db1).contains("HOT");
+            boolean db2IsHot = getTier(db2).contains("HOT");
 
+            if (db1IsHot && !db2IsHot) {
+                return new DatabasePair(tdb1, tdb2);
+            }
 
-        if (getTier(db1).contains("HOT") && getTier(db2).contains("COLD")) {
+            if (!db1IsHot && db2IsHot) {
+                return new DatabasePair(tdb2, tdb1);
+            }
 
-            return new DatabasePair(twinDataBase1, twinDataBase2);
-        } else if (getTier(db1).contains("COLD") && getTier(db2).contains("HOT")) {
-            return new DatabasePair(twinDataBase2, twinDataBase1);
-        } else {
             throw new IllegalStateException(
-                    String.format("Twin '%s' must have exactly one HOT and one COLD database", twinElement.getName()));
+                    String.format("Twin '%s' must have exactly one HOT and one COLD database", twinElement.getName())
+            );
         }
+
+        throw new IllegalStateException(
+                String.format("Twin '%s' cannot have %d database instances. Expected 0, 1, or 2.",
+                        twinElement.getName(), count)
+        );
     }
+
+    private TwinDataBase buildSingleDatabase(EAElement dbInstance) {
+        EAElement def = getXmiContext().findDefinitonBlockForInstance(dbInstance);
+
+        TwinDataBase db = new TwinDataBase();
+        db.setDataBaseId(dbInstance.getIdref());
+        db.setDefinitionId(def.getIdref());
+        db.setRetentionDays(getRetentionDays(dbInstance));
+        return db;
+    }
+
+    private TwinDataBase createDefaultDatabase(String tier) {
+        TwinDataBase db = new TwinDataBase();
+        db.setDataBaseId(UUID.randomUUID().toString());
+        db.setDefinitionId("DEFAULT_" + tier + "_DATABASE");
+        db.setRetentionDays("60");
+        return db;
+    }
+
 
     private String getRetentionDays(EAElement db2) {
         return getXmiContext().getTaggedValue(db2,"retentionPeriod");
