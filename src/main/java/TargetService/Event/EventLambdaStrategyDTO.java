@@ -10,7 +10,7 @@ public class EventLambdaStrategyDTO extends EventStrategyDTO {
 
     private String type;
     private String functionName;
-    private Boolean autoDeploy;
+    private Boolean external;
     private String pathToCode;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private FeedBackDTO feedback;
