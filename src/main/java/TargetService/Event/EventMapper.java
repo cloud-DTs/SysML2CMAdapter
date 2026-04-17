@@ -36,7 +36,7 @@ public interface EventMapper {
     default String formatProperty(TwinProperty prop) {
         TwinComponentProperty prop2 = (TwinComponentProperty) prop;
         return prop2.getComponent().getParentEntity().getShortenUUID()
-                + "." + prop2.getComponent().getShortenUUID()
+                + "." + prop2.getComponent().getComponentName()
                 + "." + prop2.getName();
     }
 
