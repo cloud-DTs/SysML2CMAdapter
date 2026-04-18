@@ -51,7 +51,7 @@ public interface EventMapper {
         for (TwinComponent component : source.getComponents()) {
             for (TwinStrategy strategy : component.getStrategies()) {
                 EventDTO dto = toDTO(strategy);
-                dto.getAction().setExternal(!strategy.getPathToCode().isEmpty());
+                dto.getAction().setExternal(strategy.getPathToCode().isEmpty());
                 if (dto != null) {
                     FeedBackDTO feedBack;
                     if(strategy.getFeedBack() instanceof  InternalFeedBackTopic feedBackTopic){
