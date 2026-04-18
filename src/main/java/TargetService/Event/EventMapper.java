@@ -30,7 +30,7 @@ public interface EventMapper {
         String rhs = formatProperty(strategy.getRhs());
         String operator = strategy.getOperator() != null ? strategy.getOperator() : "==";
 
-        return lhs + operator + rhs;
+        return lhs + " " + operator + " " + rhs;
     }
 
     default String formatProperty(TwinProperty prop) {
@@ -50,6 +50,7 @@ public interface EventMapper {
         }
         for (TwinComponent component : source.getComponents()) {
             for (TwinStrategy strategy : component.getStrategies()) {
+
                 EventDTO dto = toDTO(strategy);
                 dto.getAction().setExternal(strategy.getPathToCode().isEmpty());
                 if (dto != null) {
@@ -67,6 +68,7 @@ public interface EventMapper {
                         dtos.add(dto);
                         continue;
                     }
+
                     if(strategy.getFeedBack().getPayload() instanceof CustomPayload customPayload){
                         CustomPayloadDTO customPayloadDTO = new CustomPayloadDTO();
                         customPayloadDTO.setPayload((customPayload.getPayload().toMap()));
