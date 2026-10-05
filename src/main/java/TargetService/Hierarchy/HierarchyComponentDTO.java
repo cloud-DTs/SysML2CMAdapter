@@ -7,4 +7,5 @@ import lombok.Setter;
 @Setter
 public class HierarchyComponentDTO extends HierarchyChildrenDTO {
     private String iotDeviceId;
+    private String componentTypeId;
 }

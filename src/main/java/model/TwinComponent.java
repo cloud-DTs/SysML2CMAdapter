@@ -31,4 +31,8 @@ public class TwinComponent extends TwinModel {
     public String getId() {
         return componentId;
     }
+
+    public String getShortenDefinitionId() {
+        return TwinIdentity.getShortenUUID(definitionId);
+    }
 }

@@ -25,6 +25,7 @@ public interface HierarchyMapper {
     @Mapping(target = "name", source = "componentName")
     @Mapping(target = "type", constant = "component")
     @Mapping(target = "iotDeviceId", source = "shortenUUID")
+    @Mapping(target = "componentTypeId", source = "shortenDefinitionId")
     HierarchyComponentDTO toHierarchyComponentDTO(TwinComponent twin);
 
     default List<HierarchyEntityDTO> toHierarchyEntityDTOs(List<TwinEntity> twinEntities) {
