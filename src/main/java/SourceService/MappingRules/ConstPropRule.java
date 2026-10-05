@@ -45,7 +45,7 @@ public class ConstPropRule extends MappingRule<Attribute> {
             constComponent = new TwinComponent();
             constComponent.setComponentId(compoundId);
             constComponent.setComponentName("CONST_PROPERTIES");
-            constComponent.setDefinitionId(attribute.getEaGuid());
+			constComponent.setDefinitionId(attribute.getEaGuid().replaceAll("[{}]", ""));
             constComponent.setDeviceId(compoundId);
             constComponent.setParentEntity(owningEntity);
             constComponent.attachToParent();
