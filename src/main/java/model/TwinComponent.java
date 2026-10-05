@@ -33,6 +33,7 @@ public class TwinComponent extends TwinModel {
     }
 
     public String getShortenDefinitionId() {
+		System.out.println(definitionId);
         return TwinIdentity.getShortenUUID(definitionId);
     }
 }
