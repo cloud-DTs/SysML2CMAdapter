@@ -22,6 +22,7 @@ public abstract class TwinIdentity {
             uuidStr = splittedResult[0];
         }
 
+		System.out.println("uuidStr: " + uuidStr);
         UUID originalUuid = UUID.fromString(uuidStr.replace("_","-"));
 
         String shortId = ShortUuid.encode(originalUuid).toString();
